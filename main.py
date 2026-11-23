@@ -3,17 +3,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 import models
-from database import Base, engine, get_db
-
-Base.metadata.create_all(engine)
+from database import get_db
 
 app = FastAPI()
-
-TASKS = [
-    {"id": 1, "title": "Купить хлеб", "done": False},
-    {"id": 2, "title": "Позвонить врачу", "done": False},
-    {"id": 3, "title": "Закончить курс", "done": False},
-]
 
 
 class TaskCreate(BaseModel):
@@ -21,8 +13,14 @@ class TaskCreate(BaseModel):
     done: bool = False
 
 
+class TaskUpdate(BaseModel):
+    title: str | None = None
+    done: bool | None = None
+
+
 class Task(TaskCreate):
     id: int
+    priority: int | None = None
 
 
 @app.get("/tasks", response_model=list[Task])
@@ -38,16 +36,44 @@ def get_tasks(
 
 
 @app.get("/tasks/{task_id}", response_model=Task)
-def get_task(task_id: int):
-    for task in TASKS:
-        if task["id"] == task_id:
-            return task
-    raise HTTPException(status_code=404, detail="Task not found")
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.get(models.Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
 
 
 @app.post("/tasks", response_model=Task, status_code=201)
-def create_task(payload: TaskCreate):
-    new_id = max((task["id"] for task in TASKS), default=0) + 1
-    new_task = {"id": new_id, "title": payload.title, "done": payload.done}
-    TASKS.append(new_task)
-    return new_task
+def create_task(payload: TaskCreate, db: Session = Depends(get_db)):
+    task = models.Task(title=payload.title, done=payload.done)
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+@app.patch("/tasks/{task_id}", response_model=Task)
+def update_task(
+        task_id: int,
+        payload: TaskUpdate,
+        db: Session = Depends(get_db),
+):
+    task = db.get(models.Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if payload.title is not None:
+        task.title = payload.title
+    if payload.done is not None:
+        task.done = payload.done
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+@app.delete("/tasks/{task_id}", status_code=204)
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.get(models.Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    db.delete(task)
+    db.commit()
