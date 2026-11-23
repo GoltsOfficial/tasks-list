@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DATABASE_URL = "postgresql+psycopg://tasklist:tasklist@localhost:5433/tasklist"
+from config import settings
 
-engine = create_engine(DATABASE_URL)
+
+engine = create_engine(settings.database_url)
 
 
 class Base(DeclarativeBase):
