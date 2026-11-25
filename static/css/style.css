@@ -38,7 +38,13 @@ body {
   min-height: 100vh;
 }
 
-/* Auth */
+/* hidden must win over display:flex on #auth-screen */
+[hidden] {
+  display: none !important;
+}
+
+
+/* ——— Auth ——— */
 #auth-screen {
   display: flex;
   align-items: center;
@@ -198,6 +204,7 @@ body {
   margin-bottom: 12px;
 }
 
+/* ——— Header ——— */
 .header {
   display: flex;
   align-items: center;
@@ -232,6 +239,7 @@ body {
   font-size: 0.875rem;
 }
 
+/* ——— Main ——— */
 .main {
   max-width: 640px;
   margin: 0 auto;
@@ -294,6 +302,7 @@ body {
   color: #fff;
 }
 
+/* ——— Task list ——— */
 .task-list {
   list-style: none;
   display: flex;
@@ -407,6 +416,7 @@ body {
   font-size: 0.95rem;
 }
 
+/* Responsive */
 @media (max-width: 520px) {
   .header {
     flex-direction: column;
