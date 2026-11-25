@@ -1,19 +1,21 @@
 /**
  * Tasks List frontend
- * POST /auth/register, POST /auth/login
- * GET/POST /tasks, GET/PATCH/DELETE /tasks/{id}
+ * Работает с API:
+ *   POST /auth/register, POST /auth/login
+ *   GET/POST /tasks, GET/PATCH/DELETE /tasks/{id}
  */
 
-const API = "";
+const API = ""; // same origin — FastAPI раздаёт static
 
 const state = {
   token: localStorage.getItem("token") || null,
   email: localStorage.getItem("email") || null,
   tasks: [],
-  filter: "all",
-  mode: "login",
+  filter: "all", // all | active | done
+  mode: "login", // login | register
 };
 
+// ——— DOM ———
 const $ = (sel) => document.querySelector(sel);
 const authScreen = $("#auth-screen");
 const appScreen = $("#app-screen");
@@ -30,6 +32,7 @@ const newTaskTitle = $("#new-task-title");
 const userEmailEl = $("#user-email");
 const logoutBtn = $("#logout-btn");
 
+// ——— API helpers ———
 async function api(path, options = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -59,7 +62,7 @@ async function api(path, options = {}) {
   if (!res.ok) {
     const msg =
       (data && (data.detail || data.message)) ||
-      `Error ${res.status}`;
+      `\u041e\u0448\u0438\u0431\u043a\u0430 ${res.status}`;
     const err = new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
     err.status = res.status;
     throw err;
@@ -68,6 +71,7 @@ async function api(path, options = {}) {
   return data;
 }
 
+// ——— Auth ———
 function setAuthMode(mode) {
   state.mode = mode;
   document.querySelectorAll(".tab").forEach((t) => {
@@ -108,7 +112,7 @@ authForm.addEventListener("submit", async (e) => {
     localStorage.setItem("email", email);
     showApp();
   } catch (err) {
-    authError.textContent = err.message || "Auth error";
+    authError.textContent = err.message || "\u041e\u0448\u0438\u0431\u043a\u0430 \u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u0438";
     authError.hidden = false;
   } finally {
     authSubmit.disabled = false;
@@ -124,6 +128,7 @@ logoutBtn.addEventListener("click", () => {
   showAuth();
 });
 
+// ——— Tasks ———
 async function loadTasks() {
   tasksError.hidden = true;
   try {
@@ -139,7 +144,7 @@ async function loadTasks() {
       logoutBtn.click();
       return;
     }
-    tasksError.textContent = err.message || "Failed to load tasks";
+    tasksError.textContent = err.message || "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0438";
     tasksError.hidden = false;
   }
 }
@@ -154,11 +159,11 @@ function renderTasks() {
     li.dataset.id = task.id;
 
     li.innerHTML = `
-      <button class="task-check" title="Toggle" aria-label="Toggle">${task.done ? "\u2713" : ""}</button>
+      <button class="task-check" title="\u041e\u0442\u043c\u0435\u0442\u0438\u0442\u044c" aria-label="\u041e\u0442\u043c\u0435\u0442\u0438\u0442\u044c">${task.done ? "\u2713" : ""}</button>
       <span class="task-title"></span>
       <div class="task-actions">
-        <button class="task-btn edit" title="Edit">\u270e</button>
-        <button class="task-btn delete" title="Delete">\u2715</button>
+        <button class="task-btn edit" title="\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c">\u270e</button>
+        <button class="task-btn delete" title="\u0423\u0434\u0430\u043b\u0438\u0442\u044c">\u2715</button>
       </div>
     `;
     li.querySelector(".task-title").textContent = task.title;
@@ -233,7 +238,7 @@ function startEdit(li, task) {
 }
 
 async function deleteTask(id) {
-  if (!confirm("Delete task?")) return;
+  if (!confirm("\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0443?")) return;
   try {
     await api(`/tasks/${id}`, { method: "DELETE" });
     state.tasks = state.tasks.filter((t) => t.id !== id);
@@ -266,6 +271,7 @@ addTaskForm.addEventListener("submit", async (e) => {
   }
 });
 
+// filters
 document.querySelectorAll(".filter").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".filter").forEach((b) => b.classList.remove("active"));
@@ -275,19 +281,22 @@ document.querySelectorAll(".filter").forEach((btn) => {
   });
 });
 
+// ——— Screens ———
 function showAuth() {
-  authScreen.hidden = false;
-  appScreen.hidden = true;
+  authScreen.removeAttribute("hidden");
+  appScreen.setAttribute("hidden", "");
   passwordInput.value = "";
+  authError.hidden = true;
 }
 
 function showApp() {
-  authScreen.hidden = true;
-  appScreen.hidden = false;
+  authScreen.setAttribute("hidden", "");
+  appScreen.removeAttribute("hidden");
   userEmailEl.textContent = state.email || "";
   loadTasks();
 }
 
+// ——— Init ———
 if (state.token) {
   showApp();
 } else {
