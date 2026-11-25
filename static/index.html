@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasks List</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- Auth screen -->
+    <section id="auth-screen" class="screen">
+      <div class="auth-card">
+        <div class="logo">
+          <span class="logo-icon">✓</span>
+          <h1>Tasks List</h1>
+        </div>
+        <p class="subtitle">Войдите или создайте аккаунт</p>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="login">Вход</button>
+          <button class="tab" data-tab="register">Регистрация</button>
+        </div>
+
+        <form id="auth-form" autocomplete="on">
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" required minlength="1" placeholder="••••••••" />
+          </div>
+          <p id="auth-error" class="error" hidden></p>
+          <button type="submit" class="btn btn-primary" id="auth-submit">Войти</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Main app screen -->
+    <section id="app-screen" class="screen" hidden>
+      <header class="header">
+        <div class="header-left">
+          <span class="logo-icon small">✓</span>
+          <h1>Мои задачи</h1>
+        </div>
+        <div class="header-right">
+          <span id="user-email" class="user-email"></span>
+          <button id="logout-btn" class="btn btn-ghost">Выйти</button>
+        </div>
+      </header>
+
+      <main class="main">
+        <form id="add-task-form" class="add-task">
+          <input
+            type="text"
+            id="new-task-title"
+            placeholder="Что нужно сделать?"
+            maxlength="200"
+            required
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary">Добавить</button>
+        </form>
+
+        <div class="filters">
+          <button class="filter active" data-filter="all">Все</button>
+          <button class="filter" data-filter="active">Активные</button>
+          <button class="filter" data-filter="done">Выполненные</button>
+        </div>
+
+        <ul id="task-list" class="task-list"></ul>
+        <p id="empty-state" class="empty-state" hidden>Нет задач. Добавьте первую!</p>
+        <p id="tasks-error" class="error" hidden></p>
+      </main>
+    </section>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
